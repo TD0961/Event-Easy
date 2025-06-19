@@ -13,13 +13,14 @@ import UserManagement from './Pages/userManagement';
 import EventManagement from './Pages/eventManagement';
 import EventDetail from './Pages/eventDetail';
 import AttendeeEventPage from './Pages/attendEvent';
+import EventTicketing from './Pages/EventTicketing'; 
+import PaymentSuccess from './Pages/PaymentSuccess';
+
 
 export default function App() {
   return (
     <div>
-       
-      {/* <NavBar />  Make sure NavBar is included */}
-      
+             
       <Routes>
         {/* Existing Routes */}
         <Route path="/" element={<HomePage />} />
@@ -34,6 +35,8 @@ export default function App() {
         <Route path="/admin/event-management" element={<EventManagement />} />
         <Route path="/events/:eventId" element={<EventDetail />} />
         <Route path="/attend/:id" element={<AttendeeEventPage/>}/>
+        <Route path="/attend/:id/EventTicketing" element={<EventTicketing />} />
+        <Route path="/attend/:id/payment-success" element={<PaymentSuccess />} />
         
         {/* Payment Routes */}
   

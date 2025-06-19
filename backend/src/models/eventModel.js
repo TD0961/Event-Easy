@@ -79,10 +79,6 @@ const eventSchema = new mongoose.Schema({
   type: { type: String, enum: ['Point'], default: 'Point' },
   coordinates: { type: [Number], required: true }, // [longitude, latitude]
   },
-  attendees: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // refers to users with role = 'attendee'
-  }],
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],

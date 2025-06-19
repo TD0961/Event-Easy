@@ -8,6 +8,7 @@ const userRouter = require('./routes/userRoutes');
 const eventRouter = require('./routes/eventRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const reportRouter = require('./routes/reportRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 // const userRouter = require('./routes/userRoutes');
 // const eventRouter = require('./routes/eventRoutes');
 
@@ -18,15 +19,15 @@ const reportRouter = require('./routes/reportRoutes');
 const app = express();
 
 // Middleware
-app.use(cors({ 
-  origin: process.env.FRONTEND_URL,
-  credentials: true 
+app.use(cors({
+  origin: [
+    process.env.FRONTEND_URL,
+    'http://localhost:5173'
+  ],
+  credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
-
-// Routes
-
  
 // Default fallback route
 app.get('/', (req, res) => {
@@ -38,6 +39,8 @@ app.use("/Event-Easy/user", userRouter);
 app.use("/Event-Easy/Event", eventRouter);
 app.use('/Event-Easy/review', reviewRouter);
 app.use('/Event-Easy/report', reportRouter);
+app.use('/api', paymentRoutes);
+
 
 
 // Start server after DB connection

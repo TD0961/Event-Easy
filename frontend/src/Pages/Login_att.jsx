@@ -5,9 +5,10 @@ import axios from "axios";
 import bg_1 from "../assets/bg_1.jpg";
 import { appContent } from "../context/AppContext";
 import { FaCalendarAlt, FaEye, FaEyeSlash } from "react-icons/fa";
-
+import { jwtDecode } from "jwt-decode";
 
 export default function AttendeeLogin() {
+  const [currentBg, setCurrentBg] = useState(0);
   const { setIsLoggedin, getUserData } = useContext(appContent);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
@@ -21,6 +22,14 @@ export default function AttendeeLogin() {
     password: "",
     confirmPassword: "",
   });
+
+  // JWT decode logic
+  let userId = null;
+  const token = localStorage.getItem("token");
+  if (token) {
+    const decoded = jwtDecode(token);
+    userId = decoded.id || decoded._id || decoded.userId;
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,7 +51,6 @@ export default function AttendeeLogin() {
         }
         // Step 2: Send registration request with role set to "attendee"
         const { data } = await axios.post("http://localhost:5000/Event-Easy/users/register", {
-
           name: formData.name,
           email: formData.email,
           password: formData.password,
@@ -77,6 +85,13 @@ export default function AttendeeLogin() {
         const token = response.data.token;
         localStorage.setItem("token", token);
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+        // Decode and save userId after login (FIXED: use jwtDecode, not jwt_decode)
+        const decoded = jwtDecode(token);
+        const userId = decoded.id || decoded._id || decoded.userId;
+        if (userId) {
+          localStorage.setItem("userId", userId);
+        }
 
         setIsLoggedin(true);
         await getUserData();
@@ -166,7 +181,9 @@ export default function AttendeeLogin() {
     </>
   );
 
+ 
 
+ 
   return (
     <motion.div
       className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800 px-4 py-8"
