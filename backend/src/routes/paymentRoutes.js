@@ -2,9 +2,11 @@ const express = require('express');
 const axios = require('axios');
 const Event = require('../models/eventModel');
 const router = express.Router();
+const userAuthToken = require('../middlewares/userAuth');
+ 
 
 // 1. Initiate payment
-router.post('/event/:id/payment/initiate', async (req, res) => {
+router.post('/event/:id/payment/initiate', userAuthToken, async (req, res) => {
   const { id } = req.params;
   const { first_name, last_name, email, amount, userId } = req.body;
 

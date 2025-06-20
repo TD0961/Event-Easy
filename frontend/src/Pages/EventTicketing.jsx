@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import { jwtDecode } from "jwt-decode";
 
 export default function EventTicketing() {
   const { id } = useParams();
@@ -11,28 +10,35 @@ export default function EventTicketing() {
     email: '',
     amount: ''
   });
+  const [auth, setAuth] = useState({ email: '', password: '' }); // For re-authentication
   const [loading, setLoading] = useState(false);
-
-  // Extract userId from JWT token
-  let userId = null;
-  const token = localStorage.getItem("token");
-  if (token) {
-    const decoded = jwtDecode(token);
-    userId = decoded.id || decoded._id || decoded.userId;
-  }
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleAuthChange = e => {
+    setAuth({ ...auth, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Include userId in the request body
+      // 1. Authenticate user
+      const loginRes = await axios.post("http://localhost:5000/Event-Easy/users/login", auth);
+      const token = loginRes.data.token;
+      if (!token) throw new Error("Authentication failed");
+
+      // 2. Initiate payment with token in Authorization header
       const res = await axios.post(
         'http://localhost:5000/api/event/' + id + '/payment/initiate',
-        { ...form, userId }
+        { ...form },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (res.data && res.data.checkoutUrl) {
         window.location.href = res.data.checkoutUrl;
@@ -40,7 +46,7 @@ export default function EventTicketing() {
         alert('Payment initiation failed: No checkout URL returned from server.');
       }
     } catch (err) {
-      alert('Payment initiation failed: ' + (err.response?.data?.error || err.message));
+      alert('Authentication or payment failed: ' + (err.response?.data?.message || err.message));
     }
     setLoading(false);
   };
@@ -92,6 +98,25 @@ export default function EventTicketing() {
           required
           min="1"
           className="w-full p-3 mb-6 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-400"
+        />
+        {/* Re-authentication fields */}
+        <input
+          type="email"
+          name="email"
+          placeholder="Your Email"
+          value={auth.email}
+          onChange={handleAuthChange}
+          required
+          className="w-full p-3 mb-4 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Your Password"
+          value={auth.password}
+          onChange={handleAuthChange}
+          required
+          className="w-full p-3 mb-4 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <button
           type="submit"
