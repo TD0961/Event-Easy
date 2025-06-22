@@ -31,6 +31,10 @@ export default function AttendeeLogin() {
     userId = decoded.id || decoded._id || decoded.userId;
   }
 
+ const handleGoogleLogin = () => {
+  window.location.href = 'http://localhost:5000/auth/google';
+}; 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -308,6 +312,7 @@ export default function AttendeeLogin() {
           </div>
 
           <motion.button
+            onClick={handleGoogleLogin}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="flex items-center justify-center w-full border border-gray-300 dark:border-gray-500 px-4 py-3 rounded-lg font-medium text-gray-700 dark:text-gray-300 mx-4"

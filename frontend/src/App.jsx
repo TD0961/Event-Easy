@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from "axios";
 import NavBar from './Components/navBar';  
 import HomePage from "./Pages/HomePage";
 import { Route, Routes } from 'react-router-dom';
@@ -15,6 +16,19 @@ import EventDetail from './Pages/eventDetail';
 import AttendeeEventPage from './Pages/attendEvent';
 import EventTicketing from './Pages/EventTicketing'; 
 import PaymentSuccess from './Pages/PaymentSuccess';
+import OAuthSuccess from './Pages/OAuthSuccess';
+
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 
 
 export default function App() {
@@ -37,6 +51,7 @@ export default function App() {
         <Route path="/attend/:id" element={<AttendeeEventPage/>}/>
         <Route path="/attend/:id/EventTicketing" element={<EventTicketing />} />
         <Route path="/attend/:id/payment-success" element={<PaymentSuccess />} />
+        <Route path="/oauth-success" element={<OAuthSuccess />} />
         
         {/* Payment Routes */}
   

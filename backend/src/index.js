@@ -9,6 +9,10 @@ const eventRouter = require('./routes/eventRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const reportRouter = require('./routes/reportRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const session = require('express-session');
+const passport = require('passport');
+require('./config/passport'); 
+const authRoutes = require('./routes/authRoutes');
 // const userRouter = require('./routes/userRoutes');
 // const eventRouter = require('./routes/eventRoutes');
 
@@ -18,18 +22,27 @@ const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
-// Middleware
+// Middlewares
+app.use(session({
+  secret: process.env.JWT_SECRET,
+  resave: false,
+  saveUninitialized: true,
+})); 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(cors({
   origin: [
-    process.env.FRONTEND_URL,
-    'http://localhost:5173'
+    'http://localhost:5173',
+    process.env.FRONTEND_URL
   ],
   credentials: true
 }));
-app.use(express.json());
+
+app.use(express.json());  
 app.use(cookieParser());
  
-// Default fallback route
+// Default callback route
 app.get('/', (req, res) => {
   res.send('🚀 Event-Easy backend is running');
 });
@@ -40,6 +53,8 @@ app.use("/Event-Easy/Event", eventRouter);
 app.use('/Event-Easy/review', reviewRouter);
 app.use('/Event-Easy/report', reportRouter);
 app.use('/api', paymentRoutes);
+app.use('/auth', authRoutes);
+
 
 
 
