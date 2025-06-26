@@ -9,25 +9,26 @@ passport.use(new GoogleStrategy({
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
+      // Collect all emails from Google profile
+      const emails = profile.emails ? profile.emails.map(e => e.value) : [];
       let user = await User.findOne({ googleId: profile.id });
+      let isNewUser = false;
       if (!user) {
-        user = await User.findOne({ email: profile.emails[0].value });
+        user = await User.findOne({ email: emails[0] });
         if (user) {
           user.googleId = profile.id;
           await user.save();
         } else {
-          user = await User.create({
-            googleId: profile.id,
-            name: profile.displayName,
-            email: profile.emails[0].value,
-            role: 'attendee',
-            password: 'google-oauth', // or make password optional in schema
-          });
+          // Don't create user yet, let frontend choose email
+          // Instead, pass emails to frontend
+          return done(null, false, { emails, profile });
         }
       }
       if (!user) {
         return done(new Error("User not found after Google authentication"), null);
       }
+      user = user.toObject ? user.toObject() : user;
+      user.isNewUser = isNewUser;
       return done(null, user);
     } catch (err) {
       return done(err, null);
@@ -36,15 +37,29 @@ passport.use(new GoogleStrategy({
 ));
 
 passport.serializeUser((user, done) => {
-  if (!user) return done(new Error("No user to serialize"), null);
-  done(null, user.id);
+  if (!user) {
+    console.error("No user to serialize:", user);
+    return done(new Error("No user to serialize"), null);
+  }
+  // Try both .id and ._id for compatibility
+  const userId = user.id || user._id;
+  if (!userId) {
+    console.error("User object missing id/_id:", user);
+    return done(new Error("User object missing id/_id"), null);
+  }
+  done(null, userId);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
+    if (!user) {
+      console.error("No user found in deserializeUser for id:", id);
+      return done(new Error("User not found"), null);
+    }
     done(null, user);
   } catch (err) {
+    console.error("Error in deserializeUser:", err);
     done(err, null);
-  } 
+  }
 });
